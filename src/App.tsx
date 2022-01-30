@@ -6,23 +6,32 @@ import { Button } from "./components/Button";
 import { Wrapper } from "./components/Wrapper";
 import { MotionWrapper } from "./components/MotionWrapper";
 import { AnimatePresence } from "framer-motion";
+import { RadioInput } from "./components/RadioInput";
 function App() {
   const [name, setName] = useState("");
+  const [difficulty, setDifficulty] = useState("");
   const [currentScreen, setCurrentScreen] = useState("init");
   return (
     <div className="h-screen w-screen flex items-center justify-center bg-slate-900">
       <AnimatePresence initial={false} exitBeforeEnter={true}>
         {currentScreen === "init" && (
           <Init
+            key="Init"
             setCurrentScreen={setCurrentScreen}
             name={name}
             setName={setName}
           />
         )}
-        {/* </AnimatePresence> */}
-        {/* <AnimatePresence initial={false} exitBeforeEnter={true}> */}
         {currentScreen === "welcomeScreen" && (
-          <WelcomeScreen name={name}></WelcomeScreen>
+          <WelcomeScreen
+            key="WelcomeScreen"
+            name={name}
+            setDifficulty={setDifficulty}
+            setCurrentScreen={setCurrentScreen}
+          ></WelcomeScreen>
+        )}
+        {currentScreen === "gameScreen" && (
+          <GameScreen difficulty={difficulty}></GameScreen>
         )}
       </AnimatePresence>
     </div>
@@ -34,51 +43,91 @@ function Init(props: InitPropsTypes) {
     <MotionWrapper>
       <div className="mx-5">Hello There</div>
       <div className="mx-5">Enter Your Name</div>
-      <div className="my-2">
-        <form
-          name="initForm"
-          onSubmit={(e) => {
-            e.preventDefault();
-            setCurrentScreen("");
-            setTimeout(() => {
-              if (name !== "") {
-                setCurrentScreen("welcomeScreen");
-              }
-            }, 1000);
-          }}
-        >
+      {/* <div className="my-2"> */}
+      <form
+        name="initForm"
+        className="w-[80%]"
+        onSubmit={(e) => {
+          e.preventDefault();
+          setCurrentScreen("welcomeScreen");
+        }}
+      >
+        <div className="flex flex-row justify-center my-2">
           <Input
             setReturnThis={setName}
             name="name"
             type="text"
             autoComplete="off"
+            autoFocus={true}
           ></Input>
           <Button
             text="Submit"
             type="submit"
             bonClick={(e: React.MouseEvent<HTMLButtonElement>) => {
               e.preventDefault();
-              setCurrentScreen("");
-              setTimeout(() => {
-                if (name !== "") {
-                  setCurrentScreen("welcomeScreen");
-                }
-              }, 1000);
+              setCurrentScreen("welcomeScreen");
             }}
           ></Button>
-        </form>
-      </div>
+        </div>
+      </form>
+      {/* </div> */}
     </MotionWrapper>
   );
 }
 
 function WelcomeScreen(props: WelcomeScreenPropsTypes) {
-  const { name } = props;
+  const { name, setDifficulty, setCurrentScreen } = props;
+
+  const handleSubmit = (
+    e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>
+  ) => {
+    e.preventDefault();
+    setCurrentScreen("gameScreen");
+  };
+
   return (
     <MotionWrapper>
-      <div className="my-5">Hello {name}</div>
+      <span className="mt-5 text-4xl">Hello {name}</span>
+      <span>Select Difficulty:</span>
+      <form name="difficulty">
+        <div className="mb-5">
+          <RadioInput
+            name="difficulty"
+            id="diffEasy"
+            labelValue="Easy"
+            setReturnThis={setDifficulty}
+          ></RadioInput>
+          {/* <br /> */}
+          <RadioInput
+            name="difficulty"
+            id="diffMedi"
+            labelValue="Medium"
+            setReturnThis={setDifficulty}
+          ></RadioInput>
+          {/* <br /> */}
+          <RadioInput
+            name="difficulty"
+            id="diffHard"
+            labelValue="Hard"
+            setReturnThis={setDifficulty}
+          ></RadioInput>
+        </div>
+        <div className="mb-5">
+          <Button
+            type="submit"
+            text="Submit"
+            name="diffSubmit"
+            bonClick={handleSubmit}
+          ></Button>
+        </div>
+      </form>
     </MotionWrapper>
   );
+}
+
+function GameScreen(props: GameScreenPropsTypes) {
+  const { difficulty } = props;
+  return <MotionWrapper>GAME {difficulty}</MotionWrapper>;
 }
 
 export default App;

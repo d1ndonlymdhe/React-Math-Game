@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import React, { ReactNode } from "react";
 
 export function MotionWrapper(props: React.PropsWithChildren<ReactNode>) {
