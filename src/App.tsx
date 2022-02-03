@@ -130,4 +130,14 @@ function GameScreen(props: GameScreenPropsTypes) {
   return <MotionWrapper>GAME {difficulty}</MotionWrapper>;
 }
 
+function EasyGame() {}
+
+function generateRandom(start: number, end: number, dontInclude: number[]) {
+  let ans;
+  do {
+    ans = (Math.floor(Math.random() * end) % end) + end;
+  } while (dontInclude.includes(ans));
+  return ans;
+}
+
 export default App;
