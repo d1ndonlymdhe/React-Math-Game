@@ -7,6 +7,8 @@ type InputPropsTypes = {
   name?: string;
   type?: "text" | "password" | "number" | undefined;
   setReturnThis?: set<string>;
+  className?: string;
+  inputRef?: React.MutableRefObject<HTMLInputElement | null>;
 };
 type ButtonPropsTypes = {
   type?: "submit" | "reset" | undefined;
