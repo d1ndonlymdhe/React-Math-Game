@@ -8,6 +8,7 @@ import { AnimatePresence } from "framer-motion";
 import { RadioInput } from "./components/RadioInput";
 //@ts-ignore
 import uuid from "react-uuid";
+import { timeEnd } from "console";
 function App() {
   const [name, setName] = useState("");
   const [difficulty, setDifficulty] = useState("");
@@ -192,6 +193,7 @@ function EasyQuestion(props: EasyQuestionPropsTypes) {
   const [operator, setOperator] = useState(questions[0].operator);
   const [operand2, setOperand2] = useState(questions[0].operand2);
   const inputRef = useRef<HTMLInputElement>(null);
+  const formWrapperRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       console.log("changed automatically");
@@ -212,9 +214,19 @@ function EasyQuestion(props: EasyQuestionPropsTypes) {
         tempAns.push({ submited: false });
         setAnswers(tempAns);
       }
+    }, 4000);
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [index]);
+  useEffect(() => {
+    const glowRed = "animate-glowRed";
+    const timeoutId = setTimeout(() => {
+      formWrapperRef.current?.classList.add(glowRed);
     }, 2000);
     return () => {
       clearTimeout(timeoutId);
+      formWrapperRef.current?.classList.remove(glowRed);
     };
   }, [index]);
   return (
@@ -222,7 +234,10 @@ function EasyQuestion(props: EasyQuestionPropsTypes) {
       <div className="mb-5">
         {index + 1} of {questions.length}
       </div>
-      <div className="w-4/6 border-solid border-slate-900 border-4 rounded-lg">
+      <div
+        className="w-4/6 border-solid border-slate-900 border-4 rounded-lg"
+        ref={formWrapperRef}
+      >
         <form
           className="grid grid-cols-[1.2fr_1fr] justify-items-center my-2 mx-3 "
           name="question"
@@ -304,7 +319,6 @@ function RenderEasyResults(props: RenderEasyResultsPropsTypes) {
           Your Answer
         </div>
 
-        {/* <div className="grid grid-cols-3 gap-1 text-l justify-center justify-items-center items-center bg-slate-900 border-4 border-slate-900 rounded-lg"> */}
         {answers.map((el, i) => {
           const { operand1, operand2, operator, ans } = questions[i];
           let ansColor = "bg-red-400";
