@@ -3,10 +3,11 @@ import React, { useRef, useState } from "react";
 import "./App.css";
 import { Input } from "./components/Input";
 import { Button } from "./components/Button";
-import { Wrapper } from "./components/Wrapper";
 import { MotionWrapper } from "./components/MotionWrapper";
 import { AnimatePresence } from "framer-motion";
 import { RadioInput } from "./components/RadioInput";
+//@ts-ignore
+import uuid from "react-uuid";
 function App() {
   const [name, setName] = useState("");
   const [difficulty, setDifficulty] = useState("");
@@ -31,7 +32,7 @@ function App() {
           ></WelcomeScreen>
         )}
         {currentScreen === "gameScreen" && (
-          <GameScreen difficulty={difficulty}></GameScreen>
+          <GameScreen difficulty={difficulty} name={name}></GameScreen>
         )}
       </AnimatePresence>
     </div>
@@ -135,15 +136,16 @@ function WelcomeScreen(props: WelcomeScreenPropsTypes) {
 }
 
 function GameScreen(props: GameScreenPropsTypes) {
-  const { difficulty } = props;
+  const { difficulty, name } = props;
   return (
     <MotionWrapper>
-      <EasyGame></EasyGame>
+      <EasyGame name={name}></EasyGame>
     </MotionWrapper>
   );
 }
 
-function EasyGame() {
+function EasyGame(props: EasyGamePropsTypes) {
+  const { name } = props;
   const [answers, setAnswers] = useState<number[]>([]);
   const [finished, setFinished] = useState(false);
   const rounds = 10;
@@ -152,7 +154,7 @@ function EasyGame() {
   for (let i = 0; i < rounds; i++) {
     const operand1 = generateRandom(2, 9, []);
     const operand2 = generateRandom(2, 9, []);
-    const operatorIndex = generateRandom(0, 2, []);
+    const operatorIndex = generateRandom(0, 3, []);
     // console.log(operand1, operand2, operatorIndex);
     const operator = operators[operatorIndex];
     const ans = getAns(operand1, operand2, operator);
@@ -163,14 +165,21 @@ function EasyGame() {
       ans,
     });
   }
+  const [reactiveQuestions, setReactiveQuestions] =
+    useState<question[]>(questions);
+  // setReactiveQuestions(questions);
   if (!finished) {
     return (
       <EasyQuestion
-        {...{ questions: questions, setAnswers, answers, setFinished }}
+        {...{ questions: reactiveQuestions, setAnswers, answers, setFinished }}
       ></EasyQuestion>
     );
   }
-  return <MotionWrapper>Finished</MotionWrapper>;
+  return (
+    <RenderEasyResults
+      {...{ questions: reactiveQuestions, answers, name }}
+    ></RenderEasyResults>
+  );
 }
 
 function EasyQuestion(props: EasyQuestionPropsTypes) {
@@ -194,7 +203,10 @@ function EasyQuestion(props: EasyQuestionPropsTypes) {
             e.preventDefault();
             if (index + 1 < questions.length) {
               if (inputRef !== null) {
-                if (inputRef.current !== null) {
+                if (
+                  inputRef.current !== null &&
+                  inputRef.current.value !== ""
+                ) {
                   let tempAns = answers;
                   tempAns.push(parseInt(inputRef.current.value, 10));
                   setAnswers(tempAns);
@@ -208,8 +220,11 @@ function EasyQuestion(props: EasyQuestionPropsTypes) {
                 }
               }
             } else {
-              if (inputRef.current) {
+              if (inputRef.current && inputRef.current.value !== "") {
                 setFinished(true);
+                let tempAns = answers;
+                tempAns.push(parseInt(inputRef.current.value, 10));
+                setAnswers(tempAns);
               }
             }
           }}
@@ -224,6 +239,66 @@ function EasyQuestion(props: EasyQuestionPropsTypes) {
             ref={inputRef}
           ></Input>
         </form>
+      </div>
+    </MotionWrapper>
+  );
+}
+
+function RenderEasyResults(props: RenderEasyResultsPropsTypes) {
+  const { answers, questions, name } = props;
+
+  const score = answers.filter((el, i) => {
+    return el === questions[i].ans;
+  }).length;
+
+  return (
+    <MotionWrapper key={uuid()}>
+      <div className="pb-2">
+        <span> {name}, your score is </span>
+        <span>{score}</span>
+      </div>
+
+      <div className="grid grid-cols-3 gap-1 text-[clamp(13px,0.5vw,0px)] justify-center justify-items-center items-center bg-slate-900 border-4 border-slate-900 rounded-lg">
+        <div className="bg-slate-300 w-full h-full flex items-center justify-center text-center p-2">
+          Question
+        </div>
+        <div className="bg-slate-300 w-full h-full flex items-center justify-center text-center p-2">
+          Correct Answer
+        </div>
+        <div className="bg-slate-300 w-full h-full flex items-center justify-center text-center p-2">
+          Your Answer
+        </div>
+
+        {/* <div className="grid grid-cols-3 gap-1 text-l justify-center justify-items-center items-center bg-slate-900 border-4 border-slate-900 rounded-lg"> */}
+        {answers.map((el, i) => {
+          const { operand1, operand2, operator, ans } = questions[i];
+          let ansColor = "bg-red-400";
+          if (ans === el) {
+            ansColor = "bg-green-400";
+          }
+          return (
+            <React.Fragment key={uuid()}>
+              <div
+                className="bg-slate-300 w-full h-full flex items-center justify-center text-center p-2"
+                key={uuid()}
+              >
+                {operand1} {operator} {operand2}
+              </div>
+              <div
+                className="bg-slate-300 w-full h-full flex items-center justify-center text-center p-2"
+                key={uuid()}
+              >
+                {ans}
+              </div>
+              <div
+                className={`${ansColor} w-full h-full flex items-center justify-center text-center p-2`}
+                key={uuid()}
+              >
+                {el}
+              </div>
+            </React.Fragment>
+          );
+        })}
       </div>
     </MotionWrapper>
   );

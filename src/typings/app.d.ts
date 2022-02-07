@@ -11,6 +11,11 @@ type WelcomeScreenPropsTypes = {
 
 type GameScreenPropsTypes = {
   difficulty: string;
+  name: string;
+};
+
+type EasyGamePropsTypes = {
+  name: string;
 };
 
 type question = {
@@ -25,6 +30,12 @@ type EasyQuestionPropsTypes = {
   answers: number[];
   setAnswers: set<number[]>;
   setFinished: set<boolean>;
+};
+
+type RenderEasyResultsPropsTypes = {
+  name: string;
+  questions: question[];
+  answers: number[];
 };
 
 type set<T> = React.Dispatch<T>;
