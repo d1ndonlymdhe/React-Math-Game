@@ -24,18 +24,21 @@ type question = {
   operator: string;
   ans: number;
 };
-
+type answer = {
+  submited: boolean;
+  value?: number;
+};
 type EasyQuestionPropsTypes = {
   questions: question[];
-  answers: number[];
-  setAnswers: set<number[]>;
+  answers: answer[];
+  setAnswers: set<answer[]>;
   setFinished: set<boolean>;
 };
 
 type RenderEasyResultsPropsTypes = {
   name: string;
   questions: question[];
-  answers: number[];
+  answers: answer[];
 };
 
 type set<T> = React.Dispatch<T>;

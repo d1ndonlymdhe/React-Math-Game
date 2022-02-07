@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 // import logo from "./logo.svg";
 import "./App.css";
 import { Input } from "./components/Input";
@@ -146,7 +146,7 @@ function GameScreen(props: GameScreenPropsTypes) {
 
 function EasyGame(props: EasyGamePropsTypes) {
   const { name } = props;
-  const [answers, setAnswers] = useState<number[]>([]);
+  const [answers, setAnswers] = useState<answer[]>([]);
   const [finished, setFinished] = useState(false);
   const rounds = 10;
   const operators = ["+", "-", "x"];
@@ -185,11 +185,38 @@ function EasyGame(props: EasyGamePropsTypes) {
 function EasyQuestion(props: EasyQuestionPropsTypes) {
   const { questions, setAnswers, answers, setFinished } = props;
   const [index, setIndex] = useState(0);
-  console.log(index, questions[index]);
+  // console.log(index, questions[index]);
+
+  //try to refactor to use a single object
   const [operand1, setOperand1] = useState(questions[0].operand1);
   const [operator, setOperator] = useState(questions[0].operator);
   const [operand2, setOperand2] = useState(questions[0].operand2);
   const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      console.log("changed automatically");
+      if (inputRef && inputRef.current) {
+        inputRef.current.value = "";
+      }
+      if (index + 1 < questions.length) {
+        let tempAns = answers;
+        tempAns.push({ submited: false });
+        setAnswers(tempAns);
+        setIndex(index + 1);
+        setOperand1(questions[index + 1].operand1);
+        setOperator(questions[index + 1].operator);
+        setOperand2(questions[index + 1].operand2);
+      } else {
+        setFinished(true);
+        let tempAns = answers;
+        tempAns.push({ submited: false });
+        setAnswers(tempAns);
+      }
+    }, 2000);
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [index]);
   return (
     <MotionWrapper>
       <div className="mb-5">
@@ -201,6 +228,8 @@ function EasyQuestion(props: EasyQuestionPropsTypes) {
           name="question"
           onSubmit={(e) => {
             e.preventDefault();
+
+            //need to refactor this
             if (index + 1 < questions.length) {
               if (inputRef !== null) {
                 if (
@@ -208,7 +237,10 @@ function EasyQuestion(props: EasyQuestionPropsTypes) {
                   inputRef.current.value !== ""
                 ) {
                   let tempAns = answers;
-                  tempAns.push(parseInt(inputRef.current.value, 10));
+                  tempAns.push({
+                    submited: true,
+                    value: parseInt(inputRef.current.value, 10),
+                  });
                   setAnswers(tempAns);
                   console.log("rerender");
                   setIndex(index + 1);
@@ -223,7 +255,10 @@ function EasyQuestion(props: EasyQuestionPropsTypes) {
               if (inputRef.current && inputRef.current.value !== "") {
                 setFinished(true);
                 let tempAns = answers;
-                tempAns.push(parseInt(inputRef.current.value, 10));
+                tempAns.push({
+                  submited: true,
+                  value: parseInt(inputRef.current.value, 10),
+                });
                 setAnswers(tempAns);
               }
             }
@@ -248,7 +283,7 @@ function RenderEasyResults(props: RenderEasyResultsPropsTypes) {
   const { answers, questions, name } = props;
 
   const score = answers.filter((el, i) => {
-    return el === questions[i].ans;
+    return el.submited && el.value === questions[i].ans;
   }).length;
 
   return (
@@ -273,7 +308,7 @@ function RenderEasyResults(props: RenderEasyResultsPropsTypes) {
         {answers.map((el, i) => {
           const { operand1, operand2, operator, ans } = questions[i];
           let ansColor = "bg-red-400";
-          if (ans === el) {
+          if (el.submited && el.value === ans) {
             ansColor = "bg-green-400";
           }
           return (
@@ -294,7 +329,7 @@ function RenderEasyResults(props: RenderEasyResultsPropsTypes) {
                 className={`${ansColor} w-full h-full flex items-center justify-center text-center p-2`}
                 key={uuid()}
               >
-                {el}
+                {el.submited ? el.value : "did not submit"}
               </div>
             </React.Fragment>
           );
