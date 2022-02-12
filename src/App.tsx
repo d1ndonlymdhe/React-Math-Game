@@ -168,8 +168,7 @@ function EasyGame(props: EasyGamePropsTypes) {
       ans,
     });
   }
-  const [reactiveQuestions, setReactiveQuestions] =
-    useState<Question[]>(questions);
+  const [reactiveQuestions] = useState<Question[]>(questions);
   // setReactiveQuestions(questions);
   if (!finished) {
     return (
@@ -195,7 +194,7 @@ function GetAnswers(props: EasyQuestionPropsTypes) {
   const [operators, setOperators] = useState(questions[0].operators);
   let expression = "";
   for (let i = 0; i < operands.length; i++) {
-    if (i != operands.length - 1) {
+    if (i !== operands.length - 1) {
       expression = `${expression} ${operands[i]} ${operators[i].value}`;
     } else {
       expression = `${expression} ${operands[i]}`;
@@ -226,17 +225,18 @@ function GetAnswers(props: EasyQuestionPropsTypes) {
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [index]);
+  }, [index, answers, questions, setAnswers, setFinished]);
   useEffect(() => {
+    const formWrapper = formWrapperRef.current;
     const glowRed = "animate-glowRed";
     const timeoutId = setTimeout(() => {
-      formWrapperRef.current?.classList.add(glowRed);
+      formWrapper?.classList.add(glowRed);
     }, 2000);
     return () => {
       clearTimeout(timeoutId);
-      formWrapperRef.current?.classList.remove(glowRed);
+      formWrapper?.classList.remove(glowRed);
     };
-  }, [index]);
+  }, [index, answers, questions, setAnswers, setFinished]);
   return (
     <MotionWrapper>
       <div className="mb-5">
@@ -330,7 +330,7 @@ function RenderEasyResults(props: RenderEasyResultsPropsTypes) {
           const { operands, operators, ans } = questions[i];
           let expression = "";
           for (let i = 0; i < operands.length; i++) {
-            if (i != operands.length - 1) {
+            if (i !== operands.length - 1) {
               expression = `${expression} ${operands[i]} ${operators[i].value}`;
             } else {
               expression = `${expression} ${operands[i]}`;
@@ -402,8 +402,7 @@ function MedGame(props: EasyGamePropsTypes) {
       ans,
     });
   }
-  const [reactiveQuestions, setReactiveQuestions] =
-    useState<Question[]>(questions);
+  const [reactiveQuestions] = useState<Question[]>(questions);
   if (!finshed) {
     return (
       <GetAnswers
@@ -452,7 +451,7 @@ function getAns2(question: Question): number {
     operands[operators[0].pos + 1],
     operators[0].value
   );
-  if (operators.length == 1) {
+  if (operators.length === 1) {
     return ans;
   }
   operands = removeFromArr(operands[operators[0].pos], operands);
@@ -466,7 +465,6 @@ function getAns2(question: Question): number {
 }
 
 function updateOperators(toBeRemoved: Operator, operators: Operators) {
-  const retArr: Operators = [];
   for (let i = 0; i < operators.length; i++) {
     if (operators[i].pos > toBeRemoved.pos) {
       operators[i].pos -= 1;
