@@ -10,7 +10,7 @@ type WelcomeScreenPropsTypes = {
 };
 
 type GameScreenPropsTypes = {
-  difficulty: string;
+  difficulty: string | "Easy" | "Medium" | "Hard";
   name: string;
 };
 
@@ -18,18 +18,43 @@ type EasyGamePropsTypes = {
   name: string;
 };
 
-type question = {
+// type Question = EasyQuestion | MedQuestion;
+
+type Question = {
+  operands: number[];
+  operators: Operators;
+  ans?: number;
+};
+
+type Operator = {
+  value: "+" | "-" | "x" | "/";
+  pos: number;
+};
+
+type Operators = Operator[];
+
+type MedQuestion = {
+  type: "Med";
   operand1: number;
+  operator1: string;
   operand2: number;
-  operator: string;
+  operator2: string;
+  operand3: number;
   ans: number;
 };
-type answer = {
+
+// type expression = {
+//   operand1: number;
+//   operator?: string;
+//   operand2?: string;
+// };
+
+type Answer = {
   submited: boolean;
   value?: number;
 };
 type EasyQuestionPropsTypes = {
-  questions: question[];
+  questions: Question[];
   answers: answer[];
   setAnswers: set<answer[]>;
   setFinished: set<boolean>;
@@ -37,7 +62,7 @@ type EasyQuestionPropsTypes = {
 
 type RenderEasyResultsPropsTypes = {
   name: string;
-  questions: question[];
+  questions: Question[];
   answers: answer[];
 };
 

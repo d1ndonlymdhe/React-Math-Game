@@ -8,7 +8,6 @@ import { AnimatePresence } from "framer-motion";
 import { RadioInput } from "./components/RadioInput";
 //@ts-ignore
 import uuid from "react-uuid";
-import { timeEnd } from "console";
 function App() {
   const [name, setName] = useState("");
   const [difficulty, setDifficulty] = useState("");
@@ -138,42 +137,45 @@ function WelcomeScreen(props: WelcomeScreenPropsTypes) {
 
 function GameScreen(props: GameScreenPropsTypes) {
   const { difficulty, name } = props;
-  return (
-    <MotionWrapper>
-      <EasyGame name={name}></EasyGame>
-    </MotionWrapper>
-  );
+  let game = <EasyGame name={name}></EasyGame>;
+  if (difficulty === "Medium") {
+    game = <MedGame name={name}></MedGame>;
+  }
+  return <MotionWrapper>{game}</MotionWrapper>;
 }
 
 function EasyGame(props: EasyGamePropsTypes) {
   const { name } = props;
-  const [answers, setAnswers] = useState<answer[]>([]);
+  const [answers, setAnswers] = useState<Answer[]>([]);
   const [finished, setFinished] = useState(false);
   const rounds = 10;
-  const operators = ["+", "-", "x"];
-  const questions: question[] = [];
+  const operators: Operators = [
+    { value: "+", pos: 0 },
+    { value: "-", pos: 0 },
+    { value: "x", pos: 0 },
+  ];
+  const questions: Question[] = [];
   for (let i = 0; i < rounds; i++) {
     const operand1 = generateRandom(2, 9, []);
     const operand2 = generateRandom(2, 9, []);
     const operatorIndex = generateRandom(0, 3, []);
     // console.log(operand1, operand2, operatorIndex);
-    const operator = operators[operatorIndex];
+    const operator = operators[operatorIndex].value;
     const ans = getAns(operand1, operand2, operator);
     questions.push({
-      operand1,
-      operand2,
-      operator,
+      operands: [operand1, operand2],
+      operators: [{ value: operator, pos: i }],
       ans,
     });
   }
   const [reactiveQuestions, setReactiveQuestions] =
-    useState<question[]>(questions);
+    useState<Question[]>(questions);
   // setReactiveQuestions(questions);
   if (!finished) {
     return (
-      <EasyQuestion
+      <GetAnswers
         {...{ questions: reactiveQuestions, setAnswers, answers, setFinished }}
-      ></EasyQuestion>
+      ></GetAnswers>
     );
   }
   return (
@@ -183,15 +185,22 @@ function EasyGame(props: EasyGamePropsTypes) {
   );
 }
 
-function EasyQuestion(props: EasyQuestionPropsTypes) {
+function GetAnswers(props: EasyQuestionPropsTypes) {
   const { questions, setAnswers, answers, setFinished } = props;
   const [index, setIndex] = useState(0);
-  // console.log(index, questions[index]);
 
   //try to refactor to use a single object
-  const [operand1, setOperand1] = useState(questions[0].operand1);
-  const [operator, setOperator] = useState(questions[0].operator);
-  const [operand2, setOperand2] = useState(questions[0].operand2);
+
+  const [operands, setOperands] = useState(questions[0].operands);
+  const [operators, setOperators] = useState(questions[0].operators);
+  let expression = "";
+  for (let i = 0; i < operands.length; i++) {
+    if (i != operands.length - 1) {
+      expression = `${expression} ${operands[i]} ${operators[i].value}`;
+    } else {
+      expression = `${expression} ${operands[i]}`;
+    }
+  }
   const inputRef = useRef<HTMLInputElement>(null);
   const formWrapperRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -205,9 +214,8 @@ function EasyQuestion(props: EasyQuestionPropsTypes) {
         tempAns.push({ submited: false });
         setAnswers(tempAns);
         setIndex(index + 1);
-        setOperand1(questions[index + 1].operand1);
-        setOperator(questions[index + 1].operator);
-        setOperand2(questions[index + 1].operand2);
+        setOperands(questions[index + 1].operands);
+        setOperators(questions[index + 1].operators);
       } else {
         setFinished(true);
         let tempAns = answers;
@@ -257,12 +265,10 @@ function EasyQuestion(props: EasyQuestionPropsTypes) {
                     value: parseInt(inputRef.current.value, 10),
                   });
                   setAnswers(tempAns);
-                  console.log("rerender");
                   setIndex(index + 1);
                   //The value of index will not be updatad until rerender so +1
-                  setOperand1(questions[index + 1].operand1);
-                  setOperand2(questions[index + 1].operand2);
-                  setOperator(questions[index + 1].operator);
+                  setOperands(questions[index + 1].operands);
+                  setOperators(questions[index + 1].operators);
                   inputRef.current.value = "";
                 }
               }
@@ -279,7 +285,8 @@ function EasyQuestion(props: EasyQuestionPropsTypes) {
             }
           }}
         >
-          <span>{`${operand1} ${operator} ${operand2} = `}</span>
+          <span>{expression}</span>
+          {/* <span>{`${operands[0]} ${operators[0]} ${operands[1]} = `}</span> */}
           <Input
             type="number"
             autoComplete="off"
@@ -320,7 +327,17 @@ function RenderEasyResults(props: RenderEasyResultsPropsTypes) {
         </div>
 
         {answers.map((el, i) => {
-          const { operand1, operand2, operator, ans } = questions[i];
+          const { operands, operators, ans } = questions[i];
+          let expression = "";
+          for (let i = 0; i < operands.length; i++) {
+            if (i != operands.length - 1) {
+              expression = `${expression} ${operands[i]} ${operators[i].value}`;
+            } else {
+              expression = `${expression} ${operands[i]}`;
+            }
+          }
+          // const [operand1, operand2] = operands;
+          // const [operator] = operators;
           let ansColor = "bg-red-400";
           if (el.submited && el.value === ans) {
             ansColor = "bg-green-400";
@@ -331,7 +348,8 @@ function RenderEasyResults(props: RenderEasyResultsPropsTypes) {
                 className="bg-slate-300 w-full h-full flex items-center justify-center text-center p-2"
                 key={uuid()}
               >
-                {operand1} {operator} {operand2}
+                {/* {operand1} {operator} {operand2} */}
+                {expression}
               </div>
               <div
                 className="bg-slate-300 w-full h-full flex items-center justify-center text-center p-2"
@@ -353,13 +371,140 @@ function RenderEasyResults(props: RenderEasyResultsPropsTypes) {
   );
 }
 
+function MedGame(props: EasyGamePropsTypes) {
+  const { name } = props;
+  const [answers, setAnswers] = useState<Answer[]>([]);
+  const [finshed, setFinished] = useState(false);
+  const rounds = 10;
+  const operators: Operators = [
+    { value: "+", pos: 0 },
+    { value: "-", pos: 0 },
+    { value: "x", pos: 0 },
+  ];
+  const questions: Question[] = [];
+  for (let i = 0; i < rounds; i++) {
+    const operand1 = generateRandom(2, 9, []);
+    const operand2 = generateRandom(2, 9, []);
+    const operand3 = generateRandom(2, 9, []);
+    let operator1: Operator = { value: "+", pos: 0 };
+    operator1.value = operators[generateRandom(0, 3, [])].value;
+    operator1.pos = 0;
+    let operator2: Operator = { value: "+", pos: 1 };
+    operator2.value = operators[generateRandom(0, 3, [])].value;
+    operator2.pos = 1;
+    const ans = getAns2({
+      operands: [operand1, operand2, operand3],
+      operators: [operator1, operator2],
+    });
+    questions.push({
+      operands: [operand1, operand2, operand3],
+      operators: [operator1, operator2],
+      ans,
+    });
+  }
+  const [reactiveQuestions, setReactiveQuestions] =
+    useState<Question[]>(questions);
+  if (!finshed) {
+    return (
+      <GetAnswers
+        {...{ questions: reactiveQuestions, setAnswers, answers, setFinished }}
+      ></GetAnswers>
+    );
+  }
+  return (
+    <RenderEasyResults
+      {...{ questions: reactiveQuestions, answers, name }}
+    ></RenderEasyResults>
+  );
+}
+
 function getAns(operand1: number, operand2: number, operator: string) {
   if (operator === "+") {
     return operand1 + operand2;
   } else if (operator === "-") {
     return operand1 - operand2;
+  } else if (operator === "x") {
+    return operand1 * operand2;
+  } else if (operator === "/") {
+    return operand1 / operand2;
   }
-  return operand1 * operand2;
+  return 0;
+}
+function appendToIndex(el: any, arr: typeof el[], index: number) {
+  let returnArr = [];
+  let balancer = 0;
+  for (let i = 0; i <= arr.length; i++) {
+    if (i === index) {
+      returnArr.push(el);
+      balancer = -1;
+    } else {
+      returnArr.push(arr[i + balancer]);
+    }
+  }
+  return returnArr;
+}
+
+function getAns2(question: Question): number {
+  let { operands, operators } = question;
+  operators = sortOperators(operators);
+  const ans = getAns(
+    operands[operators[0].pos],
+    operands[operators[0].pos + 1],
+    operators[0].value
+  );
+  if (operators.length == 1) {
+    return ans;
+  }
+  operands = removeFromArr(operands[operators[0].pos], operands);
+  operands = removeFromArr(operands[operators[0].pos], operands);
+  operands = appendToIndex(ans, operands, operators[0].pos);
+
+  operators = updateOperators(operators[0], operators);
+
+  let x = getAns2({ operands, operators });
+  return x;
+}
+
+function updateOperators(toBeRemoved: Operator, operators: Operators) {
+  const retArr: Operators = [];
+  for (let i = 0; i < operators.length; i++) {
+    if (operators[i].pos > toBeRemoved.pos) {
+      operators[i].pos -= 1;
+    }
+  }
+  return removeFromArr(toBeRemoved, operators);
+}
+
+function removeFromArr(el: any, arr: typeof el[]) {
+  let allTrue = false;
+  const retArr = [];
+  for (let i = 0; i < arr.length; i++) {
+    if (arr[i] === el && !allTrue) {
+      allTrue = true;
+    } else {
+      retArr.push(arr[i]);
+    }
+  }
+  return retArr;
+}
+
+function sortOperators(operators: Operators) {
+  const priority = {
+    x: 3,
+    "+": 2,
+    "-": 1,
+    "/": 4,
+  };
+  for (let i = 0; i < operators.length; i++) {
+    for (let j = 0; j < operators.length; j++) {
+      if (priority[operators[j].value] < priority[operators[i].value]) {
+        const temp = operators[i];
+        operators[i] = operators[j];
+        operators[j] = temp;
+      }
+    }
+  }
+  return operators;
 }
 
 function generateRandom(start: number, end: number, dontInclude: number[]) {
