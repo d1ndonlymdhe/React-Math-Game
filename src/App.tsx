@@ -340,6 +340,7 @@ function RenderResults(props: RenderEasyResultsPropsTypes) {
   );
 }
 function Game(props: GameProps) {
+  console.log("rendering game");
   const { name, rounds, numberOfOperands } = props;
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [finished, setFinished] = useState(false);
@@ -362,13 +363,17 @@ function Game(props: GameProps) {
       }
     }
     const ans = getAns2({ operands, operators: qOperators });
+    console.log(ans);
     questions.push({ operands, operators: qOperators, ans });
   }
   const [reactiveQuestions] = useState<Question[]>(questions);
   if (!finished) {
     return (
       <GetAnswers
-        {...{ questions: reactiveQuestions, setAnswers, answers, setFinished }}
+        questions={reactiveQuestions}
+        setAnswers={setAnswers}
+        answers={answers}
+        setFinished={setFinished}
       ></GetAnswers>
     );
   }
