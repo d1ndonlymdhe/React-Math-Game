@@ -137,50 +137,19 @@ function WelcomeScreen(props: WelcomeScreenPropsTypes) {
 
 function GameScreen(props: GameScreenPropsTypes) {
   const { difficulty, name } = props;
-  let game = <EasyGame name={name}></EasyGame>;
+  let rounds: number = 10,
+    numberOfOperands: number = 2;
   if (difficulty === "Medium") {
-    game = <MedGame name={name}></MedGame>;
-  }
-  return <MotionWrapper>{game}</MotionWrapper>;
-}
-
-function EasyGame(props: EasyGamePropsTypes) {
-  const { name } = props;
-  const [answers, setAnswers] = useState<Answer[]>([]);
-  const [finished, setFinished] = useState(false);
-  const rounds = 10;
-  const operators: Operators = [
-    { value: "+", pos: 0 },
-    { value: "-", pos: 0 },
-    { value: "x", pos: 0 },
-  ];
-  const questions: Question[] = [];
-  for (let i = 0; i < rounds; i++) {
-    const operand1 = generateRandom(2, 9, []);
-    const operand2 = generateRandom(2, 9, []);
-    const operatorIndex = generateRandom(0, 3, []);
-    // console.log(operand1, operand2, operatorIndex);
-    const operator = operators[operatorIndex].value;
-    const ans = getAns(operand1, operand2, operator);
-    questions.push({
-      operands: [operand1, operand2],
-      operators: [{ value: operator, pos: i }],
-      ans,
-    });
-  }
-  const [reactiveQuestions] = useState<Question[]>(questions);
-  // setReactiveQuestions(questions);
-  if (!finished) {
-    return (
-      <GetAnswers
-        {...{ questions: reactiveQuestions, setAnswers, answers, setFinished }}
-      ></GetAnswers>
-    );
+    rounds = 10;
+    numberOfOperands = 3;
+  } else if (difficulty === "Hard") {
+    rounds = 10;
+    numberOfOperands = 4;
   }
   return (
-    <RenderEasyResults
-      {...{ questions: reactiveQuestions, answers, name }}
-    ></RenderEasyResults>
+    <MotionWrapper>
+      <Game {...{ rounds, numberOfOperands, name }}></Game>
+    </MotionWrapper>
   );
 }
 
@@ -301,7 +270,7 @@ function GetAnswers(props: EasyQuestionPropsTypes) {
   );
 }
 
-function RenderEasyResults(props: RenderEasyResultsPropsTypes) {
+function RenderResults(props: RenderEasyResultsPropsTypes) {
   const { answers, questions, name } = props;
 
   const score = answers.filter((el, i) => {
@@ -370,12 +339,10 @@ function RenderEasyResults(props: RenderEasyResultsPropsTypes) {
     </MotionWrapper>
   );
 }
-
-function MedGame(props: EasyGamePropsTypes) {
-  const { name } = props;
+function Game(props: GameProps) {
+  const { name, rounds, numberOfOperands } = props;
   const [answers, setAnswers] = useState<Answer[]>([]);
-  const [finshed, setFinished] = useState(false);
-  const rounds = 10;
+  const [finished, setFinished] = useState(false);
   const operators: Operators = [
     { value: "+", pos: 0 },
     { value: "-", pos: 0 },
@@ -383,27 +350,22 @@ function MedGame(props: EasyGamePropsTypes) {
   ];
   const questions: Question[] = [];
   for (let i = 0; i < rounds; i++) {
-    const operand1 = generateRandom(2, 9, []);
-    const operand2 = generateRandom(2, 9, []);
-    const operand3 = generateRandom(2, 9, []);
-    let operator1: Operator = { value: "+", pos: 0 };
-    operator1.value = operators[generateRandom(0, 3, [])].value;
-    operator1.pos = 0;
-    let operator2: Operator = { value: "+", pos: 1 };
-    operator2.value = operators[generateRandom(0, 3, [])].value;
-    operator2.pos = 1;
-    const ans = getAns2({
-      operands: [operand1, operand2, operand3],
-      operators: [operator1, operator2],
-    });
-    questions.push({
-      operands: [operand1, operand2, operand3],
-      operators: [operator1, operator2],
-      ans,
-    });
+    const operands: number[] = [];
+    const qOperators: Operators = [];
+    for (let j = 0; j < numberOfOperands; j++) {
+      operands.push(generateRandom(2, 9, []));
+      if (j < numberOfOperands - 1) {
+        let operator: Operator = { value: "+", pos: 0 };
+        operator.value = operators[generateRandom(0, 3, [])].value;
+        operator.pos = j;
+        qOperators.push(operator);
+      }
+    }
+    const ans = getAns2({ operands, operators: qOperators });
+    questions.push({ operands, operators: qOperators, ans });
   }
   const [reactiveQuestions] = useState<Question[]>(questions);
-  if (!finshed) {
+  if (!finished) {
     return (
       <GetAnswers
         {...{ questions: reactiveQuestions, setAnswers, answers, setFinished }}
@@ -411,9 +373,9 @@ function MedGame(props: EasyGamePropsTypes) {
     );
   }
   return (
-    <RenderEasyResults
+    <RenderResults
       {...{ questions: reactiveQuestions, answers, name }}
-    ></RenderEasyResults>
+    ></RenderResults>
   );
 }
 

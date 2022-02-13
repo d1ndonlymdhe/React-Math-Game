@@ -17,7 +17,11 @@ type GameScreenPropsTypes = {
 type EasyGamePropsTypes = {
   name: string;
 };
-
+type GameProps = {
+  name: string;
+  rounds: number;
+  numberOfOperands: number;
+};
 // type Question = EasyQuestion | MedQuestion;
 
 type Question = {
@@ -27,7 +31,7 @@ type Question = {
 };
 
 type Operator = {
-  value: "+" | "-" | "x" | "/";
+  value: "+" | "-" | "x";
   pos: number;
 };
 
