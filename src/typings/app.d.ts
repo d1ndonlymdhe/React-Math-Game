@@ -28,6 +28,7 @@ type Question = {
   operands: number[];
   operators: Operators;
   ans?: number;
+  log?: boolean;
 };
 
 type Operator = {

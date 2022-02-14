@@ -409,9 +409,21 @@ function appendToIndex(el: any, arr: typeof el[], index: number) {
   }
   return returnArr;
 }
-
+console.log(
+  getResultComplex({
+    operands: [3, 8, 8],
+    operators: [
+      { value: "-", pos: 0 },
+      { value: "+", pos: 1 },
+    ],
+    log: true,
+  })
+);
 function getResultComplex(question: Question): number {
-  let { operands, operators } = question;
+  let { operands, operators, log } = question;
+  if (log) {
+    console.log(operands, operators);
+  }
   operators = operators.map((e, i) => {
     e.pos = i;
     return e;
@@ -434,7 +446,7 @@ function getResultComplex(question: Question): number {
 
   operators = updateOperators(operators[0], operators);
 
-  let x = getResultComplex({ operands, operators });
+  let x = getResultComplex({ operands, operators, log });
   // console.log(x);
   return x;
 }
@@ -463,10 +475,10 @@ function removeFromArr(el: any, arr: typeof el[]) {
 
 function sortOperators(operators: Operators) {
   const priority = {
-    x: 3,
-    "+": 2,
+    x: 2,
+    "+": 1,
     "-": 1,
-    "/": 4,
+    "/": 2,
   };
   for (let i = 0; i < operators.length; i++) {
     for (let j = 0; j < operators.length; j++) {
