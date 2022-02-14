@@ -358,12 +358,12 @@ function Game(props: GameProps) {
       if (j < numberOfOperands - 1) {
         let operator: Operator = { value: "+", pos: 0 };
         operator.value = operators[generateRandom(0, 3, [])].value;
-        operator.pos = j;
+        // operator.pos = j;
         qOperators.push(operator);
       }
     }
-    const ans = getAns2({ operands, operators: qOperators });
-    console.log(ans);
+    const ans = getResultComplex({ operands, operators: qOperators });
+    // console.log(ans);
     questions.push({ operands, operators: qOperators, ans });
   }
   const [reactiveQuestions] = useState<Question[]>(questions);
@@ -384,7 +384,7 @@ function Game(props: GameProps) {
   );
 }
 
-function getAns(operand1: number, operand2: number, operator: string) {
+function getResult(operand1: number, operand2: number, operator: string) {
   if (operator === "+") {
     return operand1 + operand2;
   } else if (operator === "-") {
@@ -410,10 +410,17 @@ function appendToIndex(el: any, arr: typeof el[], index: number) {
   return returnArr;
 }
 
-function getAns2(question: Question): number {
+function getResultComplex(question: Question): number {
   let { operands, operators } = question;
+  operators = operators.map((e, i) => {
+    e.pos = i;
+    return e;
+  });
+  // console.log("inside getans2");
+  // console.log(operands);
+  // console.log(operators);
   operators = sortOperators(operators);
-  const ans = getAns(
+  const ans = getResult(
     operands[operators[0].pos],
     operands[operators[0].pos + 1],
     operators[0].value
@@ -427,7 +434,8 @@ function getAns2(question: Question): number {
 
   operators = updateOperators(operators[0], operators);
 
-  let x = getAns2({ operands, operators });
+  let x = getResultComplex({ operands, operators });
+  // console.log(x);
   return x;
 }
 
