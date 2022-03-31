@@ -5,13 +5,17 @@ type InitPropsTypes = {
 };
 type WelcomeScreenPropsTypes = {
   name: string;
-  setDifficulty: set<string>;
+  setDifficulty: set<Difficulty>;
   setCurrentScreen: set<string>;
 };
 
 type GameScreenPropsTypes = {
-  difficulty: string | "Easy" | "Medium" | "Hard";
+  difficulty: Difficulty;
   name: string;
+};
+type customDiffEditorProps = {
+  setDifficulty: set<Difficulty>;
+  setCurrentScreen: set<string>;
 };
 
 type EasyGamePropsTypes = {
@@ -19,8 +23,7 @@ type EasyGamePropsTypes = {
 };
 type GameProps = {
   name: string;
-  rounds: number;
-  numberOfOperands: number;
+  difficulty: Difficulty;
 };
 // type Question = EasyQuestion | MedQuestion;
 
@@ -48,11 +51,30 @@ type MedQuestion = {
   ans: number;
 };
 
+type InputPropsTypes = {
+  // returnThis: string;
+  placeholder?: string;
+  id?: string;
+  autoComplete?: string;
+  autoFocus?: boolean;
+  name?: string;
+  type?: "text" | "password" | "number" | undefined;
+  setReturnThis?: set<string>;
+  className?: string;
+  inputRef?: React.MutableRefObject<HTMLInputElement | null>;
+};
+
 // type expression = {
 //   operand1: number;
 //   operator?: string;
 //   operand2?: string;
 // };
+
+type Difficulty = {
+  rounds: number;
+  numberOfOperands: number;
+  timeout: number;
+};
 
 type Answer = {
   submited: boolean;
@@ -63,6 +85,7 @@ type EasyQuestionPropsTypes = {
   answers: answer[];
   setAnswers: set<answer[]>;
   setFinished: set<boolean>;
+  timeout: number;
 };
 
 type RenderEasyResultsPropsTypes = {

@@ -6,11 +6,17 @@ import { Button } from "./components/Button";
 import { MotionWrapper } from "./components/MotionWrapper";
 import { AnimatePresence } from "framer-motion";
 import { RadioInput } from "./components/RadioInput";
+import LabelInput from "./components/LabelInput";
 //@ts-ignore
 import uuid from "react-uuid";
+import { Wrapper } from "./components/Wrapper";
 function App() {
   const [name, setName] = useState("");
-  const [difficulty, setDifficulty] = useState("");
+  const [difficulty, setDifficulty] = useState<Difficulty>({
+    rounds: 10,
+    numberOfOperands: 1,
+    timeout: 3000,
+  });
   const [currentScreen, setCurrentScreen] = useState("init");
   return (
     <div className="h-screen w-screen flex items-center justify-center bg-slate-900">
@@ -24,12 +30,12 @@ function App() {
           />
         )}
         {currentScreen === "welcomeScreen" && (
-          <WelcomeScreen
+          <ChooseDiffScreen
             key="WelcomeScreen"
             name={name}
             setDifficulty={setDifficulty}
             setCurrentScreen={setCurrentScreen}
-          ></WelcomeScreen>
+          ></ChooseDiffScreen>
         )}
         {currentScreen === "gameScreen" && (
           <GameScreen difficulty={difficulty} name={name}></GameScreen>
@@ -48,7 +54,7 @@ function Init(props: InitPropsTypes) {
       {/* <div className="my-2"> */}
       <form
         name="initForm"
-        className="w-[80%]"
+        className="w-full"
         onSubmit={(e) => {
           e.preventDefault();
           if (inputRef !== null && inputRef.current !== null) {
@@ -57,27 +63,32 @@ function Init(props: InitPropsTypes) {
           }
         }}
       >
-        <div className="flex flex-row justify-center my-2">
-          <Input
-            setReturnThis={setName}
-            name="name"
-            type="text"
-            autoComplete="off"
-            ref={inputRef}
-            // setReturnThis = {setName}
-            autoFocus={true}
-          ></Input>
-          <Button
-            text="Submit"
-            type="submit"
-            bonClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-              e.preventDefault();
-              if (inputRef !== null && inputRef.current !== null) {
-                setName(inputRef.current.value);
-                setCurrentScreen("welcomeScreen");
-              }
-            }}
-          ></Button>
+        <div className="flex my-2 w-[96%] justify-evenly">
+          {/* <div className="grid grid-cols-[80%_20%] w-full gap-x-5 my-2"> */}
+          <div>
+            <Input
+              setReturnThis={setName}
+              name="name"
+              type="text"
+              autoComplete="off"
+              ref={inputRef}
+              // setReturnThis = {setName}
+              autoFocus={true}
+            ></Input>
+          </div>
+          <div>
+            <Button
+              text="Submit"
+              type="submit"
+              bonClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                e.preventDefault();
+                if (inputRef !== null && inputRef.current !== null) {
+                  setName(inputRef.current.value);
+                  setCurrentScreen("welcomeScreen");
+                }
+              }}
+            ></Button>
+          </div>
         </div>
       </form>
       {/* </div> */}
@@ -85,9 +96,9 @@ function Init(props: InitPropsTypes) {
   );
 }
 
-function WelcomeScreen(props: WelcomeScreenPropsTypes) {
+function ChooseDiffScreen(props: WelcomeScreenPropsTypes) {
   const { name, setDifficulty, setCurrentScreen } = props;
-
+  const [createCustom, setCreateCustom] = useState(false);
   const handleSubmit = (
     e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>
   ) => {
@@ -99,62 +110,155 @@ function WelcomeScreen(props: WelcomeScreenPropsTypes) {
     <MotionWrapper>
       <span className="mt-5 text-4xl">Hello {name}</span>
       <span>Select Difficulty:</span>
-      <form name="difficulty">
-        <div className="mb-5">
-          <RadioInput
-            name="difficulty"
-            id="diffEasy"
-            labelValue="Easy"
-            setReturnThis={setDifficulty}
-          ></RadioInput>
+      <form name="difficulty" onSubmit={handleSubmit}>
+        <div className="mb-5 flex w-[96%] flex-wrap justify-evenly">
+          <div>
+            <Button
+              type="submit"
+              text="Easy"
+              bgColor="bg-green-400"
+              bonClick={() => {
+                setDifficulty({
+                  rounds: 10,
+                  numberOfOperands: 2,
+                  timeout: 3,
+                });
+              }}
+            ></Button>
+          </div>
           {/* <br /> */}
-          <RadioInput
-            name="difficulty"
-            id="diffMedi"
-            labelValue="Medium"
-            setReturnThis={setDifficulty}
-          ></RadioInput>
+          <div>
+            <Button
+              type="submit"
+              text="Medium"
+              bgColor="bg-yellow-400"
+              bonClick={() => {
+                setDifficulty({
+                  rounds: 10,
+                  numberOfOperands: 3,
+                  timeout: 5,
+                });
+              }}
+            ></Button>
+          </div>
           {/* <br /> */}
-          <RadioInput
-            name="difficulty"
-            id="diffHard"
-            labelValue="Hard"
-            setReturnThis={setDifficulty}
-          ></RadioInput>
+          <div>
+            <Button
+              type="submit"
+              text="Hard"
+              bgColor="bg-red-400"
+              bonClick={() => {
+                setDifficulty({
+                  rounds: 10,
+                  numberOfOperands: 4,
+                  timeout: 8,
+                });
+              }}
+            ></Button>
+          </div>
+          <div className="mt-5">
+            <Button
+              text=" Custom  "
+              bgColor="bg-cyan-400"
+              bonClick={(e) => {
+                e.preventDefault();
+                setCreateCustom(true);
+              }}
+            ></Button>
+          </div>
         </div>
-        <div className="mb-5">
+        {/* <div className="mb-5 flex w-[96%] justify-center">
           <Button
             type="submit"
             text="Submit"
             name="diffSubmit"
             bonClick={handleSubmit}
           ></Button>
+        </div> */}
+      </form>
+      {createCustom && (
+        <CustomDiffEditor
+          setDifficulty={setDifficulty}
+          setCurrentScreen={setCurrentScreen}
+        ></CustomDiffEditor>
+      )}
+    </MotionWrapper>
+  );
+}
+
+function CustomDiffEditor(props: customDiffEditorProps) {
+  const { setDifficulty, setCurrentScreen } = props;
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (roundsRef.current && operandsRef.current && timeoutRef.current) {
+      const rounds = parseInt(roundsRef.current.value, 10);
+      const numberOfOperands = parseInt(operandsRef.current.value, 10);
+      const timeout = parseInt(timeoutRef.current.value, 10) * 1000;
+      setDifficulty({ rounds, numberOfOperands, timeout });
+      setCurrentScreen("gameScreen");
+    }
+  };
+  const roundsRef = useRef<HTMLInputElement>(null);
+  const operandsRef = useRef<HTMLInputElement>(null);
+  const timeoutRef = useRef<HTMLInputElement>(null);
+
+  return (
+    <Wrapper>
+      {/* Hello Make custom difficulties */}
+      <form className="w-full" onSubmit={handleSubmit}>
+        <div className="flex flex-col gap-1 w-full items-center">
+          <LabelInput
+            labelText="Rounds"
+            inputId="Rounds"
+            InputProps={{ placeholder: "Rounds", min: 1 }}
+            inputRef={roundsRef}
+          ></LabelInput>
+          <LabelInput
+            labelText="Operands"
+            inputId="Operands"
+            InputProps={{ placeholder: "Operands", min: 1 }}
+            inputRef={operandsRef}
+          ></LabelInput>
+
+          <LabelInput
+            labelText="Timeout Duration"
+            inputId="Timeout"
+            InputProps={{ placeholder: "Timeout Duration" }}
+            inputRef={timeoutRef}
+          ></LabelInput>
+          <Button
+            text="submit"
+            type="submit"
+            bonClick={handleSubmit}
+            bgColor="bg-cyan-400"
+          ></Button>
         </div>
       </form>
-    </MotionWrapper>
+    </Wrapper>
   );
 }
 
 function GameScreen(props: GameScreenPropsTypes) {
   const { difficulty, name } = props;
-  let rounds: number = 10,
-    numberOfOperands: number = 2;
-  if (difficulty === "Medium") {
-    rounds = 10;
-    numberOfOperands = 3;
-  } else if (difficulty === "Hard") {
-    rounds = 10;
-    numberOfOperands = 4;
-  }
+  // const { rounds, numberOfOperands, timeout } = difficulty;
+  // let rounds: number = 10,
+  //   numberOfOperands: number = 2;
+  // if (difficulty === "Medium") {
+  //   rounds = 10;
+  //   numberOfOperands = 3;
+  // } else if (difficulty === "Hard") {
+  //   rounds = 10;
+  //   numberOfOperands = 4;
+  // }
   return (
     <MotionWrapper>
-      <Game {...{ rounds, numberOfOperands, name }}></Game>
+      <Game difficulty={difficulty} name={name}></Game>
     </MotionWrapper>
   );
 }
 
 function GetAnswers(props: EasyQuestionPropsTypes) {
-  const { questions, setAnswers, answers, setFinished } = props;
+  const { questions, setAnswers, answers, setFinished, timeout } = props;
   const [index, setIndex] = useState(0);
 
   //try to refactor to use a single object
@@ -190,7 +294,7 @@ function GetAnswers(props: EasyQuestionPropsTypes) {
         tempAns.push({ submited: false });
         setAnswers(tempAns);
       }
-    }, 4000);
+    }, timeout);
     return () => {
       clearTimeout(timeoutId);
     };
@@ -200,7 +304,7 @@ function GetAnswers(props: EasyQuestionPropsTypes) {
     const glowRed = "animate-glowRed";
     const timeoutId = setTimeout(() => {
       formWrapper?.classList.add(glowRed);
-    }, 2000);
+    }, timeout - 2000);
     return () => {
       clearTimeout(timeoutId);
       formWrapper?.classList.remove(glowRed);
@@ -341,7 +445,8 @@ function RenderResults(props: RenderEasyResultsPropsTypes) {
 }
 function Game(props: GameProps) {
   console.log("rendering game");
-  const { name, rounds, numberOfOperands } = props;
+  const { name, difficulty } = props;
+  const { rounds, numberOfOperands, timeout } = difficulty;
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [finished, setFinished] = useState(false);
   const operators: Operators = [
@@ -374,6 +479,7 @@ function Game(props: GameProps) {
         setAnswers={setAnswers}
         answers={answers}
         setFinished={setFinished}
+        timeout={timeout}
       ></GetAnswers>
     );
   }
@@ -409,24 +515,31 @@ function appendToIndex(el: any, arr: typeof el[], index: number) {
   }
   return returnArr;
 }
-console.log(
-  getResultComplex({
-    operands: [3, 8, 8],
-    operators: [
-      { value: "-", pos: 0 },
-      { value: "+", pos: 1 },
-    ],
-    log: true,
-  })
-);
+
+// function getResultComplex2(question: Question) {
+//   let { operands, operators, log } = question;
+//   if (log) {
+//     console.log(operands, operators);
+//   }
+
+// }
+
 function getResultComplex(question: Question): number {
   let { operands, operators, log } = question;
+  // let parsed = parseOperators(operands, operators);
+  // operands = parsed.operands;
+  // operators = parsed.operators;
   if (log) {
     console.log(operands, operators);
   }
+
   operators = operators.map((e, i) => {
     e.pos = i;
     return e;
+
+
+
+    
   });
   // console.log("inside getans2");
   // console.log(operands);
@@ -449,6 +562,16 @@ function getResultComplex(question: Question): number {
   let x = getResultComplex({ operands, operators, log });
   // console.log(x);
   return x;
+}
+
+function parseOperators(operands: number[], operators: Operator[]) {
+  operators.forEach((operator, i) => {
+    if (operator.value == "-") {
+      operands[i + 1] = 0 - operands[i + 1];
+      operator.value = "+";
+    }
+  });
+  return { operands, operators };
 }
 
 function updateOperators(toBeRemoved: Operator, operators: Operators) {

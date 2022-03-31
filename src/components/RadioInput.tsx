@@ -9,7 +9,6 @@ export function RadioInput(props: RadioInputPropsTypes) {
         name={name}
         onChange={() => {
           setReturnThis(labelValue);
-          console.log(labelValue);
         }}
       ></input>
       <label htmlFor={id}>{labelValue}</label>
