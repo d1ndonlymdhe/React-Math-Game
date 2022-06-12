@@ -121,7 +121,7 @@ function ChooseDiffScreen(props: WelcomeScreenPropsTypes) {
                 setDifficulty({
                   rounds: 10,
                   numberOfOperands: 2,
-                  timeout: 3,
+                  timeout: 3000,
                 });
               }}
             ></Button>
@@ -136,7 +136,7 @@ function ChooseDiffScreen(props: WelcomeScreenPropsTypes) {
                 setDifficulty({
                   rounds: 10,
                   numberOfOperands: 3,
-                  timeout: 5,
+                  timeout: 5000,
                 });
               }}
             ></Button>
@@ -151,7 +151,7 @@ function ChooseDiffScreen(props: WelcomeScreenPropsTypes) {
                 setDifficulty({
                   rounds: 10,
                   numberOfOperands: 4,
-                  timeout: 8,
+                  timeout: 8000,
                 });
               }}
             ></Button>
