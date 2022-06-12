@@ -5,7 +5,6 @@ import { Input } from "./components/Input";
 import { Button } from "./components/Button";
 import { MotionWrapper } from "./components/MotionWrapper";
 import { AnimatePresence } from "framer-motion";
-import { RadioInput } from "./components/RadioInput";
 import LabelInput from "./components/LabelInput";
 //@ts-ignore
 import uuid from "react-uuid";
@@ -298,7 +297,7 @@ function GetAnswers(props: EasyQuestionPropsTypes) {
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [index, answers, questions, setAnswers, setFinished]);
+  }, [index, answers, questions, setAnswers, setFinished, timeout]);
   useEffect(() => {
     const formWrapper = formWrapperRef.current;
     const glowRed = "animate-glowRed";
@@ -309,7 +308,7 @@ function GetAnswers(props: EasyQuestionPropsTypes) {
       clearTimeout(timeoutId);
       formWrapper?.classList.remove(glowRed);
     };
-  }, [index, answers, questions, setAnswers, setFinished]);
+  }, [index, answers, questions, setAnswers, setFinished, timeout]);
   return (
     <MotionWrapper>
       <div className="mb-5">
@@ -563,17 +562,6 @@ function getResultComplex(question: Question): number {
   // console.log(x);
   return x;
 }
-
-function parseOperators(operands: number[], operators: Operator[]) {
-  operators.forEach((operator, i) => {
-    if (operator.value == "-") {
-      operands[i + 1] = 0 - operands[i + 1];
-      operator.value = "+";
-    }
-  });
-  return { operands, operators };
-}
-
 function updateOperators(toBeRemoved: Operator, operators: Operators) {
   for (let i = 0; i < operators.length; i++) {
     if (operators[i].pos > toBeRemoved.pos) {
