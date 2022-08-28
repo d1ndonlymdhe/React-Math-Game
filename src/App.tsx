@@ -375,7 +375,6 @@ function GetAnswers(props: EasyQuestionPropsTypes) {
 
 function RenderResults(props: RenderEasyResultsPropsTypes) {
   const { answers, questions, name } = props;
-
   const score = answers.filter((el, i) => {
     return el.submited && el.value === questions[i].ans;
   }).length;
@@ -457,16 +456,22 @@ function Game(props: GameProps) {
   for (let i = 0; i < rounds; i++) {
     const operands: number[] = [];
     const qOperators: Operators = [];
+    let expression = "";
     for (let j = 0; j < numberOfOperands; j++) {
-      operands.push(generateRandom(2, 9, []));
+      const abcd = generateRandom(2, 9, []);
+      operands.push(abcd);
+      expression += abcd.toString()
       if (j < numberOfOperands - 1) {
         let operator: Operator = { value: "+", pos: 0 };
         operator.value = operators[generateRandom(0, 3, [])].value;
         // operator.pos = j;
         qOperators.push(operator);
+        expression += operator.value != "x" ? operator.value : "*"
       }
     }
-    const ans = getResultComplex({ operands, operators: qOperators });
+    console.log("expression =", expression)
+    // const ans = getResultComplex({ operands, operators: qOperators });
+    const ans = eval(expression);
     // console.log(ans);
     questions.push({ operands, operators: qOperators, ans });
   }
